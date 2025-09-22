@@ -218,9 +218,22 @@ Design entièrement responsive avec breakpoints :
 
 ## 📈 Version
 
-**Version actuelle :** 1.0.0
+**Version actuelle :** 1.1.2
 
 ### Changelog
+
+- **1.1.2** : Correction majeure du workflow
+  - **Correction** : Détection améliorée des produits bookables dans le panier
+  - **Amélioration** : Logs de débogage détaillés pour diagnostiquer les problèmes
+  - **Correction** : Gestion des conflits de hooks template_redirect avec priorités
+  - **Amélioration** : Validation multiple pour identifier les produits WooCommerce Bookings
+  - **Correction** : Gestion robuste des sessions WooCommerce non initialisées
+  - **Debug** : Mode debug activé par défaut avec niveau de log détaillé
+
+- **1.1.1** : Amélioration stabilité
+  - Amélioration de la gestion des erreurs
+  - Optimisation des performances
+  - Mise à jour de la documentation
 
 - **1.0.0** : Version initiale MVP
   - Workflow 4 étapes

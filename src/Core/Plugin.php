@@ -105,7 +105,9 @@ class Plugin {
             ),
             'session_ttl' => 1200, // 20 minutes
             'redirect_checkout' => true,
-            'wizard_version' => '1.0'
+            'wizard_version' => '1.0',
+            'debug_mode' => true, // Mode debug activé par défaut
+            'log_level' => 'debug' // Niveau de log détaillé
         );
         
         add_option( 'wc_msbc_settings', $default_settings );

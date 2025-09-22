@@ -33,45 +33,89 @@ class WorkflowManager {
      * Initialisation des hooks WordPress/WooCommerce
      */
     private function init_hooks() {
-        // Interception du panier vers workflow
-        add_action( 'template_redirect', array( $this, 'maybe_redirect_to_workflow' ) );
+        // Interception du panier vers workflow - Priorité haute pour éviter les conflits
+        \add_action( 'template_redirect', array( $this, 'maybe_redirect_to_workflow' ), 5 );
         
         // Protection des pages workflow
-        add_action( 'template_redirect', array( $this, 'protect_workflow_pages' ) );
+        \add_action( 'template_redirect', array( $this, 'protect_workflow_pages' ), 15 );
         
         // Hook après ajout au panier
-        add_filter( 'woocommerce_add_to_cart_redirect', array( $this, 'redirect_after_add_to_cart' ) );
+        \add_filter( 'woocommerce_add_to_cart_redirect', array( $this, 'redirect_after_add_to_cart' ), 10 );
         
         // Validation avant checkout
-        add_action( 'woocommerce_checkout_process', array( $this, 'validate_checkout_access' ) );
+        \add_action( 'woocommerce_checkout_process', array( $this, 'validate_checkout_access' ), 5 );
+        
+        // Hook de débogage pour analyser les conflits
+        \add_action( 'template_redirect', array( $this, 'debug_template_redirect_hooks' ), 1 );
     }
     
     /**
      * Redirection vers workflow si conditions remplies
      */
     public function maybe_redirect_to_workflow() {
+        $this->logger->debug( 'maybe_redirect_to_workflow - Début exécution', array(
+            'is_checkout' => \is_checkout(),
+            'is_wc_endpoint_url' => \is_wc_endpoint_url(),
+            'current_url' => $_SERVER['REQUEST_URI'] ?? 'unknown',
+            'query_vars' => $GLOBALS['wp_query']->query_vars ?? array()
+        ) );
+        
         // Vérification si on est sur la page checkout classique
-        if ( ! is_checkout() || is_wc_endpoint_url() ) {
+        if ( ! \is_checkout() || \is_wc_endpoint_url() ) {
+            $this->logger->debug( 'Pas sur page checkout ou endpoint WC détecté - Arrêt redirection' );
             return;
         }
         
         // Vérification si le wizard est déjà complété
-        if ( $this->session_manager->is_wizard_complete() ) {
+        $wizard_complete = $this->session_manager->is_wizard_complete();
+        $this->logger->debug( 'Vérification wizard complet', array( 'wizard_complete' => $wizard_complete ) );
+        
+        if ( $wizard_complete ) {
+            $this->logger->debug( 'Wizard déjà complété - Pas de redirection' );
             return;
         }
         
         // Vérification si panier contient des produits bookables
-        if ( ! $this->workflow_validator->cart_has_booking_products() ) {
+        $has_booking_products = $this->workflow_validator->cart_has_booking_products();
+        $this->logger->debug( 'Vérification produits bookables', array( 'has_booking_products' => $has_booking_products ) );
+        
+        if ( ! $has_booking_products ) {
+            $this->logger->info( 'Aucun produit bookable dans le panier - Pas de redirection workflow' );
             return;
         }
         
-        // Redirection vers étape 1
+        // Récupération URL étape 1
         $step_1_url = $this->get_step_url( 1 );
-        if ( $step_1_url ) {
-            $this->logger->info( 'Redirection checkout vers workflow étape 1' );
-            wp_safe_redirect( $step_1_url );
-            exit;
+        $this->logger->debug( 'URL étape 1', array( 'step_1_url' => $step_1_url ) );
+        
+        if ( ! $step_1_url ) {
+            $this->logger->error( 'URL étape 1 introuvable - Configuration incorrecte' );
+            return;
         }
+        
+        // Vérification que nous ne sommes pas déjà sur l'étape 1
+        $current_page_id = \get_queried_object_id();
+        $settings = \get_option( 'wc_msbc_settings', array() );
+        $step_1_page_id = $settings['workflow_pages']['step_1'] ?? 0;
+        
+        if ( $current_page_id === $step_1_page_id ) {
+            $this->logger->debug( 'Déjà sur la page étape 1 - Pas de redirection' );
+            return;
+        }
+        
+        // Exécution de la redirection
+        $this->logger->info( 'Exécution redirection checkout vers workflow étape 1', array(
+            'from_url' => $_SERVER['REQUEST_URI'] ?? 'unknown',
+            'to_url' => $step_1_url,
+            'current_page_id' => $current_page_id,
+            'step_1_page_id' => $step_1_page_id
+        ) );
+        
+        // Démarrage session wizard
+        $this->session_manager->start_wizard_session();
+        
+        \wp_safe_redirect( $step_1_url );
+        exit;
     }
     
     /**
@@ -92,8 +136,8 @@ class WorkflowManager {
             $redirect_url = $this->get_step_url( $allowed_step );
             
             if ( $redirect_url ) {
-                wc_add_notice( 
-                    __( 'Vous avez été redirigé vers l\'étape appropriée du processus.', 'wc-multi-step-booking-checkout' ),
+                \wc_add_notice( 
+                    \__( 'Vous avez été redirigé vers l\'étape appropriée du processus.', 'wc-multi-step-booking-checkout' ),
                     'notice'
                 );
                 
@@ -102,7 +146,7 @@ class WorkflowManager {
                     'to_step' => $allowed_step
                 ) );
                 
-                wp_safe_redirect( $redirect_url );
+                \wp_safe_redirect( $redirect_url );
                 exit;
             }
         }
@@ -134,14 +178,14 @@ class WorkflowManager {
         }
         
         if ( ! $this->session_manager->is_wizard_complete() ) {
-            wc_add_notice( 
-                __( 'Vous devez compléter toutes les étapes du processus avant de finaliser votre commande.', 'wc-multi-step-booking-checkout' ),
+            \wc_add_notice( 
+                \__( 'Vous devez compléter toutes les étapes du processus avant de finaliser votre commande.', 'wc-multi-step-booking-checkout' ),
                 'error'
             );
             
             $step_url = $this->get_step_url( 1 );
             if ( $step_url ) {
-                wp_safe_redirect( $step_url );
+                \wp_safe_redirect( $step_url );
                 exit;
             }
         }
@@ -165,12 +209,12 @@ class WorkflowManager {
      * Récupération de l'étape workflow courante basée sur l'URL
      */
     private function get_current_workflow_step(): int {
-        if ( ! is_page() ) {
+        if ( ! \is_page() ) {
             return 0;
         }
         
-        $current_page_id = get_queried_object_id();
-        $settings = get_option( 'wc_msbc_settings', array() );
+        $current_page_id = \get_queried_object_id();
+        $settings = \get_option( 'wc_msbc_settings', array() );
         $workflow_pages = $settings['workflow_pages'] ?? array();
         
         foreach ( $workflow_pages as $step => $page_id ) {
@@ -186,7 +230,7 @@ class WorkflowManager {
      * URL d'une étape
      */
     public function get_step_url( int $step ): string {
-        $settings = get_option( 'wc_msbc_settings', array() );
+        $settings = \get_option( 'wc_msbc_settings', array() );
         $workflow_pages = $settings['workflow_pages'] ?? array();
         $page_id = $workflow_pages[ "step_{$step}" ] ?? 0;
         
@@ -195,7 +239,47 @@ class WorkflowManager {
             return '';
         }
         
-        return get_permalink( $page_id ) ?: '';
+        return \get_permalink( $page_id ) ?: '';
+    }
+    
+    /**
+     * Méthode de débogage pour analyser les conflits de hooks
+     */
+    public function debug_template_redirect_hooks() {
+        if ( ! \is_checkout() ) {
+            return;
+        }
+        
+        global $wp_filter;
+        $template_redirect_hooks = $wp_filter['template_redirect'] ?? null;
+        
+        if ( $template_redirect_hooks ) {
+            $hooks_info = array();
+            foreach ( $template_redirect_hooks->callbacks as $priority => $callbacks ) {
+                foreach ( $callbacks as $callback_info ) {
+                    $callback = $callback_info['function'];
+                    $callback_name = 'unknown';
+                    
+                    if ( is_string( $callback ) ) {
+                        $callback_name = $callback;
+                    } elseif ( is_array( $callback ) && count( $callback ) === 2 ) {
+                        $class = is_object( $callback[0] ) ? get_class( $callback[0] ) : $callback[0];
+                        $method = $callback[1];
+                        $callback_name = $class . '::' . $method;
+                    }
+                    
+                    $hooks_info[] = array(
+                        'priority' => $priority,
+                        'callback' => $callback_name
+                    );
+                }
+            }
+            
+            $this->logger->debug( 'Hooks template_redirect sur page checkout', array(
+                'hooks_count' => count( $hooks_info ),
+                'hooks' => $hooks_info
+            ) );
+        }
     }
     
     /**
@@ -212,10 +296,10 @@ class WorkflowManager {
             'completed_steps' => $completed_steps,
             'progress_percentage' => ( count( $completed_steps ) / 4 ) * 100,
             'step_labels' => array(
-                1 => __( 'Sélection', 'wc-multi-step-booking-checkout' ),
-                2 => __( 'Informations', 'wc-multi-step-booking-checkout' ),
-                3 => __( 'Signature', 'wc-multi-step-booking-checkout' ),
-                4 => __( 'Validation', 'wc-multi-step-booking-checkout' )
+                1 => \__( 'Sélection', 'wc-multi-step-booking-checkout' ),
+                2 => \__( 'Informations', 'wc-multi-step-booking-checkout' ),
+                3 => \__( 'Signature', 'wc-multi-step-booking-checkout' ),
+                4 => \__( 'Validation', 'wc-multi-step-booking-checkout' )
             )
         );
     }

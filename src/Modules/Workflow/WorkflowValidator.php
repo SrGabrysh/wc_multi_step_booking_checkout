@@ -24,14 +24,88 @@ class WorkflowValidator {
      * Vérification si le panier contient des produits bookables
      */
     public function cart_has_booking_products(): bool {
-        if ( ! WC()->cart || WC()->cart->is_empty() ) {
+        if ( ! \WC()->cart || \WC()->cart->is_empty() ) {
+            $this->logger->debug( 'Panier vide ou indisponible' );
             return false;
         }
         
-        foreach ( WC()->cart->get_cart() as $cart_item ) {
+        $cart_contents = \WC()->cart->get_cart();
+        $this->logger->debug( 'Analyse du panier', array(
+            'cart_count' => count( $cart_contents ),
+            'cart_items' => array_keys( $cart_contents )
+        ) );
+        
+        foreach ( $cart_contents as $cart_item_key => $cart_item ) {
             $product = $cart_item['data'];
-            if ( $product && $product->is_type( 'booking' ) ) {
+            $product_id = $cart_item['product_id'] ?? 0;
+            
+            if ( ! $product ) {
+                $this->logger->warning( 'Produit introuvable dans panier', array(
+                    'cart_item_key' => $cart_item_key,
+                    'product_id' => $product_id
+                ) );
+                continue;
+            }
+            
+            $product_type = $product->get_type();
+            $this->logger->debug( 'Analyse produit panier', array(
+                'product_id' => $product_id,
+                'product_type' => $product_type,
+                'cart_item_key' => $cart_item_key,
+                'is_booking_check' => $product->is_type( 'booking' ),
+                'class_name' => get_class( $product )
+            ) );
+            
+            // Vérification multiple pour détecter les produits bookables
+            if ( $this->is_bookable_product( $product, $product_id ) ) {
+                $this->logger->info( 'Produit bookable détecté dans panier', array(
+                    'product_id' => $product_id,
+                    'product_type' => $product_type
+                ) );
                 return true;
+            }
+        }
+        
+        $this->logger->info( 'Aucun produit bookable détecté dans le panier' );
+        return false;
+    }
+    
+    /**
+     * Vérification multiple si un produit est bookable
+     */
+    private function is_bookable_product( $product, int $product_id ): bool {
+        // Méthode 1 : Vérification type direct
+        if ( $product->is_type( 'booking' ) ) {
+            return true;
+        }
+        
+        // Méthode 2 : Vérification classe WooCommerce Bookings
+        if ( class_exists( 'WC_Product_Booking' ) && $product instanceof \WC_Product_Booking ) {
+            return true;
+        }
+        
+        // Méthode 3 : Vérification meta _wc_booking
+        $is_bookable = \get_post_meta( $product_id, '_wc_booking', true );
+        if ( $is_bookable === 'yes' ) {
+            return true;
+        }
+        
+        // Méthode 4 : Vérification via WooCommerce Bookings API
+        if ( \function_exists( 'wc_booking_get_product' ) ) {
+            $booking_product = \wc_booking_get_product( $product_id );
+            if ( $booking_product && is_object( $booking_product ) ) {
+                return true;
+            }
+        }
+        
+        // Méthode 5 : Vérification type de post
+        $post_type = \get_post_type( $product_id );
+        if ( $post_type === 'product' ) {
+            $terms = \wp_get_post_terms( $product_id, 'product_type' );
+            foreach ( $terms as $term ) {
+                if ( $term->slug === 'booking' ) {
+                    return true;
+                }
             }
         }
         
@@ -131,7 +205,7 @@ class WorkflowValidator {
         }
         
         // Vérification session disponible
-        if ( ! WC()->session ) {
+        if ( ! \WC()->session ) {
             return false;
         }
         
@@ -171,21 +245,21 @@ class WorkflowValidator {
      */
     public function validate_plugin_configuration(): array {
         $errors = array();
-        $settings = get_option( 'wc_msbc_settings', array() );
+        $settings = \get_option( 'wc_msbc_settings', array() );
         
         // Vérification pages configurées
         $workflow_pages = $settings['workflow_pages'] ?? array();
         for ( $i = 1; $i <= 4; $i++ ) {
             $page_id = $workflow_pages[ "step_{$i}" ] ?? 0;
-            if ( ! $page_id || get_post_status( $page_id ) !== 'publish' ) {
-                $errors[] = sprintf( __( 'Page étape %d non configurée ou non publiée', 'wc-multi-step-booking-checkout' ), $i );
+            if ( ! $page_id || \get_post_status( $page_id ) !== 'publish' ) {
+                $errors[] = sprintf( \__( 'Page étape %d non configurée ou non publiée', 'wc-multi-step-booking-checkout' ), $i );
             }
         }
         
         // Vérification TTL session
         $session_ttl = $settings['session_ttl'] ?? 0;
         if ( $session_ttl < 300 || $session_ttl > 3600 ) {
-            $errors[] = __( 'TTL session doit être entre 5 et 60 minutes', 'wc-multi-step-booking-checkout' );
+            $errors[] = \__( 'TTL session doit être entre 5 et 60 minutes', 'wc-multi-step-booking-checkout' );
         }
         
         return $errors;
