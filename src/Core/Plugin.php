@@ -11,7 +11,6 @@ namespace TBFormation\WCMultiStepBookingCheckout\Core;
 use TBFormation\WCMultiStepBookingCheckout\Modules\Workflow\WorkflowManager;
 use TBFormation\WCMultiStepBookingCheckout\Modules\Session\SessionManager;
 use TBFormation\WCMultiStepBookingCheckout\Modules\Shortcodes\ShortcodeManager;
-use TBFormation\WCMultiStepBookingCheckout\Admin\AdminManager;
 
 if ( ! defined( 'ABSPATH' ) ) exit;
 
@@ -82,9 +81,7 @@ class Plugin {
      * Initialisation de l'administration
      */
     private function init_admin() {
-        if ( is_admin() ) {
-            new AdminManager( $this->logger, $this->modules );
-        }
+        // Pas d'interface d'administration - configuration via shortcodes uniquement
     }
     
     /**
