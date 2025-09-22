@@ -1,0 +1,238 @@
+/**
+ * Styles pour l'interface d'administration WC Multi-Step Booking Checkout
+ */
+
+/* === PAGE SETTINGS === */
+.wc-msbc-admin-header {
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #ccd0d4;
+  border-radius: 4px;
+  margin: 20px 0;
+}
+
+.wc-msbc-settings-form {
+  background: #fff;
+  padding: 20px;
+  border: 1px solid #ccd0d4;
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+
+/* === TABLE PAGES === */
+.wc-msbc-pages-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 10px 0;
+}
+
+.wc-msbc-pages-table td {
+  padding: 10px;
+  vertical-align: middle;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.wc-msbc-pages-table td:first-child {
+  width: 200px;
+  font-weight: 600;
+}
+
+.wc-msbc-pages-table select {
+  min-width: 250px;
+  margin-right: 10px;
+}
+
+.wc-msbc-pages-table .button-small {
+  margin-right: 5px;
+}
+
+/* === SIDEBAR === */
+.wc-msbc-admin-sidebar {
+  float: right;
+  width: 300px;
+  margin-left: 20px;
+}
+
+.wrap .wc-msbc-admin-sidebar .postbox {
+  margin-top: 0;
+}
+
+/* === WIDGET STATUT === */
+.wc-msbc-status-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.wc-msbc-status-item:last-child {
+  border-bottom: none;
+}
+
+.wc-msbc-status-label {
+  font-weight: 500;
+}
+
+.wc-msbc-status-value {
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 3px;
+  font-size: 12px;
+}
+
+.wc-msbc-status-value.success {
+  background: #d1e7dd;
+  color: #0f5132;
+}
+
+.wc-msbc-status-value.warning {
+  background: #fff3cd;
+  color: #664d03;
+}
+
+.wc-msbc-status-value.error {
+  background: #f8d7da;
+  color: #842029;
+}
+
+.wc-msbc-status-warning {
+  margin-top: 15px;
+  padding: 10px;
+  background: #fff3cd;
+  border-left: 4px solid #ffc107;
+  border-radius: 3px;
+}
+
+.wc-msbc-status-warning p {
+  margin: 5px 0;
+  font-size: 13px;
+}
+
+/* === WIDGET SHORTCODES === */
+.wc-msbc-shortcode-item {
+  margin-bottom: 15px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #f0f0f1;
+}
+
+.wc-msbc-shortcode-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.wc-msbc-shortcode-item code {
+  display: block;
+  background: #f6f7f7;
+  padding: 8px 12px;
+  border-radius: 3px;
+  font-family: Consolas, Monaco, monospace;
+  font-size: 12px;
+  margin-bottom: 5px;
+  border: 1px solid #ddd;
+}
+
+.wc-msbc-shortcode-item p {
+  margin: 0;
+  font-size: 13px;
+  color: #666;
+}
+
+/* === RESPONSIVE === */
+@media (max-width: 1200px) {
+  .wc-msbc-admin-sidebar {
+    float: none;
+    width: 100%;
+    margin-left: 0;
+    margin-top: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .wc-msbc-pages-table,
+  .wc-msbc-pages-table tbody,
+  .wc-msbc-pages-table tr,
+  .wc-msbc-pages-table td {
+    display: block;
+    width: 100%;
+  }
+
+  .wc-msbc-pages-table td:first-child {
+    width: 100%;
+    margin-bottom: 5px;
+    font-weight: 600;
+    border-bottom: none;
+  }
+
+  .wc-msbc-pages-table td {
+    padding: 5px 0;
+    border-bottom: 1px solid #f0f0f1;
+  }
+
+  .wc-msbc-pages-table tr {
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #ddd;
+  }
+
+  .wc-msbc-pages-table select {
+    width: 100%;
+    min-width: auto;
+    margin: 5px 0;
+  }
+
+  .wc-msbc-status-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+}
+
+/* === ANIMATIONS === */
+.wc-msbc-settings-form {
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === FOCUS ET ACCESSIBILITÉ === */
+.wc-msbc-pages-table select:focus,
+.wc-msbc-settings-form input:focus {
+  outline: 2px solid #007cba;
+  outline-offset: 2px;
+}
+
+/* === NOTICES PERSONNALISÉES === */
+.wc-msbc-notice {
+  padding: 12px 16px;
+  margin: 15px 0;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.wc-msbc-notice.success {
+  background: #d1e7dd;
+  color: #0f5132;
+  border-left: 4px solid #198754;
+}
+
+.wc-msbc-notice.error {
+  background: #f8d7da;
+  color: #842029;
+  border-left: 4px solid #dc3545;
+}
+
+.wc-msbc-notice.warning {
+  background: #fff3cd;
+  color: #664d03;
+  border-left: 4px solid #ffc107;
+}

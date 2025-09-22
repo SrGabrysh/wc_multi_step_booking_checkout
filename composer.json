@@ -1,0 +1,24 @@
+{
+  "name": "tb-formation/wc-multi-step-booking-checkout",
+  "description": "Plugin WordPress pour workflow multi-étapes avec WooCommerce Bookings",
+  "type": "wordpress-plugin",
+  "license": "GPL-2.0-or-later",
+  "authors": [
+    {
+      "name": "TB Formation",
+      "email": "dev@tb-formation.fr"
+    }
+  ],
+  "require": {
+    "php": ">=7.4"
+  },
+  "autoload": {
+    "psr-4": {
+      "TBFormation\\WCMultiStepBookingCheckout\\": "src/"
+    }
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "classmap-authoritative": true
+  }
+}
