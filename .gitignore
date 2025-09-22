@@ -1,0 +1,35 @@
+# WordPress
+wp-config.php
+wp-content/uploads/
+wp-content/cache/
+
+# Plugin specific
+node_modules/
+.DS_Store
+.vscode/
+.idea/
+*.log
+*.tmp
+
+# Composer
+vendor/
+composer.lock
+
+# Development
+.env
+.env.local
+debug.log
+
+# OS generated files
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# Build files
+dist/
+build/
+*.min.js
+*.min.css
+!assets/js/*.min.js
+!assets/css/*.min.css
