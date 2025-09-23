@@ -3,7 +3,7 @@
  * Plugin Name: WooCommerce Multi-Step Booking Checkout
  * Plugin URI: https://tb-formation.fr
  * Description: Plugin WordPress pour créer un workflow multi-étapes avec WooCommerce Bookings
- * Version: 1.1.2
+ * Version: 1.1.3
  * Author: TB Formation
  * Text Domain: wc-multi-step-booking-checkout
  * Domain Path: /languages
@@ -19,7 +19,7 @@ declare( strict_types=1 );
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Constantes du plugin
-define( 'WC_MSBC_VERSION', '1.1.2' );
+define( 'WC_MSBC_VERSION', '1.1.3' );
 define( 'WC_MSBC_PATH', plugin_dir_path( __FILE__ ) );
 define( 'WC_MSBC_URL', plugin_dir_url( __FILE__ ) );
 define( 'WC_MSBC_BASENAME', plugin_basename( __FILE__ ) );

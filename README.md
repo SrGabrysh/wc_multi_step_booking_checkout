@@ -223,6 +223,7 @@ Design entièrement responsive avec breakpoints :
 ### Changelog
 
 - **1.1.2** : Correction majeure du workflow
+
   - **Correction** : Détection améliorée des produits bookables dans le panier
   - **Amélioration** : Logs de débogage détaillés pour diagnostiquer les problèmes
   - **Correction** : Gestion des conflits de hooks template_redirect avec priorités
@@ -231,6 +232,7 @@ Design entièrement responsive avec breakpoints :
   - **Debug** : Mode debug activé par défaut avec niveau de log détaillé
 
 - **1.1.1** : Amélioration stabilité
+
   - Amélioration de la gestion des erreurs
   - Optimisation des performances
   - Mise à jour de la documentation
